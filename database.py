@@ -1,14 +1,23 @@
-database=[
-            {"name": "spaghetti carbonara", "salty": 1, "bitter": 0, "spicy": 0.25, "cheese": 1, "pasta": 1, "cuisine": "Italian"},
-            {"name": "pizza", "salty": 1, "bitter": 0.25, "spicy": 0.25, "cheese": 1, "cuisine": "Italian"},
-            {"name": "dumplings", "salty": 1, "bitter": 0, "spicy": 0.5, "cheese": 0.5, "cuisine": "Polish"},
-            {"name": "lasagna", "salty": 1, "bitter": 0, "spicy": 0.25, "cheese": 1, "pasta": 0.5, "cuisine": "Italian"},
-            {"name": "pad thai", "salty": 1, "bitter": 0.25, "spicy": 1, "cheese": 0, "cuisine": "Thai"},
-            {"name": "sushi", "salty": 1, "bitter": 0, "spicy": 0.25, "cheese": 0, "cuisine": "Japanese"},
-            {"name": "tacos", "salty": 1, "bitter": 0.25, "spicy": 1, "cheese": 0.5, "cuisine": "Mexican"},
-            {"name": "tiramisu", "sweet": 1, "coffee": 1, "alcohol": 0.5, "cocoa": 1, "cuisine": "Italian"},
-            {"name": "creme brulee", "sweet": 1, "creamy": 1, "cuisine": "French"},
-            {"name": "churros", "sweet": 1, "crispy": 1, "chocolate": 0.5, "cuisine": "Spanish"},
-            {"name": "mochi", "sweet": 1, "chewy": 1, "bean paste": 1, "cuisine": "Japanese"},
-            {"name": "baklava", "sweet": 1, "crispy": 1, "cuisine": "Arabic/Balkan"},
-      ]
+from enum import IntEnum
+
+
+class Cuisine(IntEnum):
+    Italian = 1.
+    Polish = 2.
+    Japanese = 3.
+
+
+class Name(IntEnum):
+    Id1 = 1.
+    Id2 = 1.
+    Id3 = 3.
+    Id4 = 4.
+
+
+# there should be a class Dish, each of dish must have same features, also when it is set to zero
+database = [
+    {"name": Name.Id1, "salty": 1, "bitter": 0, "spicy": 0.25, "cheese": 1, "cuisine": Cuisine.Italian},
+    {"name": Name.Id2, "salty": 1, "bitter": 0.25, "spicy": 0.25, "cheese": 1, "cuisine": Cuisine.Italian},
+    {"name": Name.Id3, "salty": 1, "bitter": 0, "spicy": 0.5, "cheese": 0.5, "cuisine": Cuisine.Polish},
+    {"name": Name.Id4, "salty": 1, "bitter": 0, "spicy": 0.25, "cheese": 0, "cuisine": Cuisine.Japanese},
+]
