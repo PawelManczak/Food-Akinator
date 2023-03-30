@@ -36,4 +36,4 @@ export_graphviz(
 r = export_text(tree_clf)
 print(r)
 
-# s <-- command exporting to png
+# dot -Tpng iris_tree.dot -o iris_tree.png <-- command exporting to png
