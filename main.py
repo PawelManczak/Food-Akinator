@@ -1,6 +1,7 @@
 from sklearn.tree import DecisionTreeClassifier, export_graphviz
 from sklearn.tree import export_text
 from database import database
+from data import SetUpData
 
 # enums
 # DecisionTreeClassifier() cannot work on strings, so we need to set to each of them identifier,
@@ -12,7 +13,7 @@ for recipe in database:
     values = list(recipe.values())
     values_list.append(values)
 
-print(values_list)
+#print(values_list)
 
 # creating a decision tree
 x = values_list
@@ -23,7 +24,7 @@ tree_clf.fit(x, y)
 
 # visualization
 features = list(database[0].keys())
-f = open("/Users/pawelmanczak/probabilistic methods/pythonProject/iris_tree.dot", 'w')
+f = open("iris_tree.dot", 'w')
 export_graphviz(
     tree_clf,
     out_file=f,  # path where you want it to output
@@ -34,6 +35,7 @@ export_graphviz(
 )
 
 r = export_text(tree_clf)
-print(r)
-
+#print(r)
+example = SetUpData('some string', sweet=True, spicy=True)
+print(example)
 # dot -Tpng iris_tree.dot -o iris_tree.png <-- command exporting to png
