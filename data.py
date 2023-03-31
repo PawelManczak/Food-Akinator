@@ -1,5 +1,5 @@
 from dataclasses import dataclass, fields
-
+from dataSQL import serialize
 
 @dataclass
 class Dish:
@@ -54,6 +54,11 @@ class DataHandler:
 
     def __init__(self):
         self.load_dishes()
+
+
+    def serializeData(self, Dish):
+        serialize(self, Dish)
+
 
     def load_dishes(self):
         self.add_dish('pizza margherita', Dish(cheese=True, cuisineItalian=True))
@@ -135,3 +140,4 @@ class DataHandler:
         self.add_dish('beef kebab', Dish(sweet=False, spicy=True, sour=True, bitter=False, salty=True, umami=True))
         self.add_dish('grilled salmon',
                       Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))
+
