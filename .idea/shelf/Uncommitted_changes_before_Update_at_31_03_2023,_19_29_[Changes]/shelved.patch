@@ -1,0 +1,295 @@
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from sklearn.tree import DecisionTreeClassifier, export_graphviz\nfrom sklearn.tree import export_text\n\nfrom data import DataHandler, Dish\n\ndh = DataHandler()\n\n# creating a decision tree\nx = dh.dishes\ny = dh.names\n\ntree_clf = DecisionTreeClassifier(criterion='entropy')\ntree_clf.fit(x, y)\n\n# visualization\nf = open(\"iris_tree.dot\", 'w')\nexport_graphviz(\n    tree_clf,\n    out_file=f,  # path where you want it to output\n    feature_names=Dish.get_dish_variable_names(),\n    class_names=y,\n    rounded=True,\n    filled=True\n)\n\nr = export_text(tree_clf)\n#print(r)\n\nchildren_left = tree_clf.tree_.children_left\nchildren_right = tree_clf.tree_.children_right\n\nprint(tree_clf.tree_.feature[6])\n# pobieramy tablice z indeksami atrybutów i wartościami progów\nfeatures = tree_clf.tree_.feature\nthresholds = tree_clf.tree_.threshold\n\n\n# funkcja rekurencyjna do wypisania węzłów\n\"\"\"def print_node(node_id, depth):\n    # wypisujemy węzeł\n    print(\"{}node={}, feature={}, threshold={}\".format(\n        \"  \" * depth, node_id, features[node_id], thresholds[node_id]))\n    # przechodzimy do lewego i prawego potomka, jeśli istnieją\n    if children_left[node_id] != -1:\n        print_node(children_left[node_id], depth + 1)\n    if children_right[node_id] != -1:\n        print_node(children_right[node_id], depth + 1)\n\n\n# wywołujemy funkcję dla korzenia drzewa\nprint_node(0, 0)\n# walking through tree\"\"\"\n\n# dot -Tpng iris_tree.dot -o iris_tree.png <-- command exporting to png\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision 77265e4384a716db698fb14ee2a35832fe389325)
++++ b/main.py	(date 1680283763076)
+@@ -8,8 +8,8 @@
+ # creating a decision tree
+ x = dh.dishes
+ y = dh.names
+-
+-tree_clf = DecisionTreeClassifier(criterion='entropy')
++print(len(x))
++tree_clf = DecisionTreeClassifier(criterion='entropy', min_samples_leaf=1, max_depth=100000)
+ tree_clf.fit(x, y)
+ 
+ # visualization
+@@ -24,31 +24,31 @@
+ )
+ 
+ r = export_text(tree_clf)
+-#print(r)
++print(r)
+ 
+ children_left = tree_clf.tree_.children_left
+ children_right = tree_clf.tree_.children_right
+ 
+-print(tree_clf.tree_.feature[6])
+-# pobieramy tablice z indeksami atrybutów i wartościami progów
+ features = tree_clf.tree_.feature
+ thresholds = tree_clf.tree_.threshold
+ 
+ 
++# wyświetlamy warunki różnicujące dla węzłów
++
+ # funkcja rekurencyjna do wypisania węzłów
+-"""def print_node(node_id, depth):
+-    # wypisujemy węzeł
+-    print("{}node={}, feature={}, threshold={}".format(
+-        "  " * depth, node_id, features[node_id], thresholds[node_id]))
+-    # przechodzimy do lewego i prawego potomka, jeśli istnieją
+-    if children_left[node_id] != -1:
+-        print_node(children_left[node_id], depth + 1)
+-    if children_right[node_id] != -1:
+-        print_node(children_right[node_id], depth + 1)
++node = 0  # zaczynamy od korzenia
+ 
++while tree_clf.tree_.children_left[node] != tree_clf.tree_.children_right[node]:
++    feature = tree_clf.tree_.feature[node]
++    threshold = tree_clf.tree_.threshold[node]
++    answer = input("Czy {} <= {}? ".format(Dish.get_dish_variable_names()[features[node]], threshold))
++    if answer == 't':
++        node = tree_clf.tree_.children_left[node]
++    else:
++        node = tree_clf.tree_.children_right[node]
+ 
+-# wywołujemy funkcję dla korzenia drzewa
+-print_node(0, 0)
+-# walking through tree"""
++predicted_class = tree_clf.classes_[tree_clf.tree_.value[node][0].argmax()]
++
++print("Klasa końcowa:", predicted_class)
+ 
+ # dot -Tpng iris_tree.dot -o iris_tree.png <-- command exporting to png
+Index: data.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from dataclasses import dataclass, fields\n\n\n@dataclass\nclass Dish:\n    sweet: bool = False\n    sour: bool = False\n    spicy: bool = False\n    salty: bool = False\n    umami: bool = False\n    bitter: bool = False\n    cheese: bool = False\n    gluten_free: bool = False\n    vegetarian: bool = False\n    vegan: bool = False\n    organic: bool = False\n    cuisineAmerican: bool = False\n    cuisineChinese: bool = False\n    cuisineFrench: bool = False\n    cuisineGreek: bool = False\n    cuisineIndian: bool = False\n    cuisineItalian: bool = False\n    cuisineJapanese: bool = False\n    cuisineKorean: bool = False\n    cuisineMexican: bool = False\n    cuisineMiddle_Eastern: bool = False\n    cuisineRussian: bool = False\n    cuisineThai: bool = False\n    cuisineVietnamese: bool = False\n    cuisineOther: bool = False\n\n    def __post_init__(self):\n        true_args = [arg for arg in locals() if arg]\n        if len(true_args) == 0:\n            raise ValueError(\"At least one bool argument must be True.\")\n\n    def get_dish_vector(dish):\n        dish_fields = fields(Dish)\n        return [getattr(dish, field.name) for field in dish_fields]\n\n    @staticmethod\n    def get_dish_variable_names():\n        dish_fields = fields(Dish)\n        return [field.name for field in dish_fields]\n\n\nclass DataHandler:\n    names: list[str] = []\n    dishes = []\n\n    def add_dish(self, name: str, dish: Dish):\n        self.names.append(name)\n        self.dishes.append(dish.get_dish_vector())\n\n    def __init__(self):\n        self.load_dishes()\n\n    def load_dishes(self):\n        self.add_dish('pizza margherita', Dish(cheese=True, cuisineItalian=True))\n        self.add_dish('pizza capriciosa',\n                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=True,\n                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=False,\n                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,\n                           cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,\n                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,\n                           cuisineVietnamese=False, cuisineOther=False))\n        self.add_dish('spaghetti bolognese',\n                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=False,\n                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=False,\n                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,\n                           cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,\n                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,\n                           cuisineVietnamese=False, cuisineOther=False))\n        self.add_dish('carbonara',\n                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=True,\n                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=False,\n                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,\n                           cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,\n                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,\n                           cuisineVietnamese=False, cuisineOther=False))\n        self.add_dish('lasagne',\n                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=True,\n                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=False,\n                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,\n                           cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,\n                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,\n                           cuisineVietnamese=False, cuisineOther=False))\n        self.add_dish('risotto',\n                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=True,\n                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=False,\n                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,\n                           cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,\n                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,\n                           cuisineVietnamese=False, cuisineOther=False))\n        self.add_dish('hamburger',\n                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=True,\n                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=True,\n                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,\n                           cuisineItalian=False, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,\n                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,\n                           cuisineVietnamese=False, cuisineOther=False))\n        self.add_dish('steak', Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('salmon fillet', Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('fish and chips',\n                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=False))\n        self.add_dish('chicken curry', Dish(sweet=False, spicy=True, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('beef stroganoff',\n                      Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))\n        self.add_dish('spinach and feta pie',\n                      Dish(sweet=False, spicy=False, sour=False, bitter=True, salty=True, umami=False))\n        self.add_dish('grilled cheese sandwich',\n                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('hamburger', Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('chicken shawarma',\n                      Dish(sweet=False, spicy=True, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('fajitas', Dish(sweet=False, spicy=True, sour=True, bitter=False, salty=True, umami=True))\n        self.add_dish('taco salad', Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))\n        self.add_dish('chicken teriyaki',\n                      Dish(sweet=True, spicy=False, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('beef and broccoli stir fry',\n                      Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))\n        self.add_dish('vegetable lasagna',\n                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('beef bourguignon',\n                      Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))\n        self.add_dish('shrimp scampi', Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))\n        self.add_dish('lamb chops', Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('chicken cordon bleu',\n                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('chicken alfredo',\n                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('spaghetti bolognese',\n                      Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))\n        self.add_dish('pork ribs', Dish(sweet=True, spicy=True, sour=False, bitter=False, salty=True, umami=True))\n        self.add_dish('beef kebab', Dish(sweet=False, spicy=True, sour=True, bitter=False, salty=True, umami=True))\n        self.add_dish('grilled salmon',\n                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/data.py b/data.py
+--- a/data.py	(revision 77265e4384a716db698fb14ee2a35832fe389325)
++++ b/data.py	(date 1680283270898)
+@@ -28,6 +28,15 @@
+     cuisineThai: bool = False
+     cuisineVietnamese: bool = False
+     cuisineOther: bool = False
++    fruity: bool = False
++    nutty: bool = False
++    herbal: bool = False
++    floral: bool = False
++    earthy: bool = False
++    cheesy: bool = False
++    creamy: bool = False
++    smoky: bool = False
++    savory: bool = False
+ 
+     def __post_init__(self):
+         true_args = [arg for arg in locals() if arg]
+@@ -56,82 +65,35 @@
+         self.load_dishes()
+ 
+     def load_dishes(self):
+-        self.add_dish('pizza margherita', Dish(cheese=True, cuisineItalian=True))
+-        self.add_dish('pizza capriciosa',
+-                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=True,
+-                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=False,
+-                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,
++        self.add_dish('steak',
++                      Dish(sweet=False, sour=False, bitter=False, salty=True, umami=True, spicy=False, fruity=False,
++                           nutty=False, herbal=False, floral=False, earthy=False, cheesy=False, creamy=False,
++                           smoky=False, savory=False))
++        self.add_dish('salmon fillet',
++                      Dish(sweet=False, sour=False, bitter=False, salty=True, umami=True, spicy=False, fruity=False,
++                           nutty=False, herbal=False, floral=False, earthy=False, cheesy=False, creamy=False,
++                           smoky=True, savory=False))
++        self.add_dish('fish and chips',
++                      Dish(sweet=False, sour=False, bitter=False, salty=True, umami=False, spicy=False, fruity=False,
++                           nutty=False, herbal=False, floral=False, earthy=False, cheesy=False, creamy=False,
++                           smoky=False, savory=False, cuisineChinese=False, cuisineFrench=False, cuisineGreek=False,
++                           cuisineIndian=False,
+                            cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,
+                            cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,
+                            cuisineVietnamese=False, cuisineOther=False))
+-        self.add_dish('spaghetti bolognese',
+-                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=False,
+-                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=False,
+-                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,
+-                           cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,
+-                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,
+-                           cuisineVietnamese=False, cuisineOther=False))
+-        self.add_dish('carbonara',
+-                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=True,
+-                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=False,
+-                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,
+-                           cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,
++        self.add_dish('beef stroganoff',
++                      Dish(sweet=False, sour=True, bitter=False, salty=True, umami=True, spicy=False, fruity=False,
++                           nutty=False, herbal=False, floral=False, earthy=False, cheesy=False, creamy=True,
++                           smoky=False, savory=False, cuisineIndian=False,
++                           cuisineItalian=False, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,
+                            cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,
+-                           cuisineVietnamese=False, cuisineOther=False))
+-        self.add_dish('lasagne',
+-                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=True,
+-                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=False,
+-                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,
+-                           cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,
+-                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,
+-                           cuisineVietnamese=False, cuisineOther=False))
+-        self.add_dish('risotto',
+-                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=True,
+-                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=False,
+-                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,
+-                           cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,
+-                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,
+-                           cuisineVietnamese=False, cuisineOther=False))
+-        self.add_dish('hamburger',
+-                      Dish(sweet=False, sour=False, spicy=False, salty=False, umami=False, bitter=False, cheese=True,
+-                           gluten_free=False, vegetarian=False, vegan=False, organic=False, cuisineAmerican=True,
+-                           cuisineChinese=False, cuisineFrench=False, cuisineGreek=False, cuisineIndian=False,
++                           cuisineVietnamese=False, cuisineOther=True))
++        self.add_dish('spinach and feta pie',
++                      Dish(sweet=False, sour=False, bitter=True, salty=True, umami=False, spicy=False, fruity=False,
++                           nutty=True, herbal=False, floral=False, earthy=False, cheesy=True, creamy=False, smoky=False,
++                           savory=False, cuisineIndian=False,
+                            cuisineItalian=False, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,
+                            cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,
+-                           cuisineVietnamese=False, cuisineOther=False))
+-        self.add_dish('steak', Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('salmon fillet', Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('fish and chips',
+-                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=False))
+-        self.add_dish('chicken curry', Dish(sweet=False, spicy=True, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('beef stroganoff',
+-                      Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))
+-        self.add_dish('spinach and feta pie',
+-                      Dish(sweet=False, spicy=False, sour=False, bitter=True, salty=True, umami=False))
+-        self.add_dish('grilled cheese sandwich',
+-                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('hamburger', Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('chicken shawarma',
+-                      Dish(sweet=False, spicy=True, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('fajitas', Dish(sweet=False, spicy=True, sour=True, bitter=False, salty=True, umami=True))
+-        self.add_dish('taco salad', Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))
+-        self.add_dish('chicken teriyaki',
+-                      Dish(sweet=True, spicy=False, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('beef and broccoli stir fry',
+-                      Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))
+-        self.add_dish('vegetable lasagna',
+-                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('beef bourguignon',
+-                      Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))
+-        self.add_dish('shrimp scampi', Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))
+-        self.add_dish('lamb chops', Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('chicken cordon bleu',
+-                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('chicken alfredo',
+-                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('spaghetti bolognese',
+-                      Dish(sweet=False, spicy=False, sour=True, bitter=False, salty=True, umami=True))
+-        self.add_dish('pork ribs', Dish(sweet=True, spicy=True, sour=False, bitter=False, salty=True, umami=True))
+-        self.add_dish('beef kebab', Dish(sweet=False, spicy=True, sour=True, bitter=False, salty=True, umami=True))
+-        self.add_dish('grilled salmon',
+-                      Dish(sweet=False, spicy=False, sour=False, bitter=False, salty=True, umami=True))
++                           cuisineVietnamese=False, cuisineOther=True))
++
++
+Index: iris_tree.dot
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>digraph Tree {\nnode [shape=box, style=\"filled, rounded\", color=\"black\", fontname=\"helvetica\"] ;\nedge [fontname=\"helvetica\"] ;\n0 [label=\"sour <= 0.5\\nentropy = 4.774\\nsamples = 30\\nvalue = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1\\n2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1]\\nclass = hamburger\", fillcolor=\"#ffffff\"] ;\n1 [label=\"umami <= 0.5\\nentropy = 4.369\\nsamples = 22\\nvalue = [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1\\n2, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1]\\nclass = hamburger\", fillcolor=\"#f6fafe\"] ;\n0 -> 1 [labeldistance=2.5, labelangle=45, headlabel=\"True\"] ;\n2 [label=\"cheese <= 0.5\\nentropy = 3.17\\nsamples = 9\\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0\\n1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0]\\nclass = lasagne\", fillcolor=\"#ffffff\"] ;\n1 -> 2 ;\n3 [label=\"salty <= 0.5\\nentropy = 1.585\\nsamples = 3\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]\\nclass = beef stroganoff\", fillcolor=\"#ffffff\"] ;\n2 -> 3 ;\n4 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]\\nclass = lamb chops\", fillcolor=\"#e539ac\"] ;\n3 -> 4 ;\n5 [label=\"bitter <= 0.5\\nentropy = 1.0\\nsamples = 2\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]\\nclass = beef stroganoff\", fillcolor=\"#ffffff\"] ;\n3 -> 5 ;\n6 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = beef stroganoff\", fillcolor=\"#39e5bd\"] ;\n5 -> 6 ;\n7 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]\\nclass = chicken cordon bleu\", fillcolor=\"#e53986\"] ;\n5 -> 7 ;\n8 [label=\"cuisineAmerican <= 0.5\\nentropy = 2.585\\nsamples = 6\\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]\\nclass = lasagne\", fillcolor=\"#ffffff\"] ;\n2 -> 8 ;\n9 [label=\"entropy = 2.322\\nsamples = 5\\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]\\nclass = lasagne\", fillcolor=\"#ffffff\"] ;\n8 -> 9 ;\n10 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = hamburger\", fillcolor=\"#399de5\"] ;\n8 -> 10 ;\n11 [label=\"spicy <= 0.5\\nentropy = 3.7\\nsamples = 13\\nvalue = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1\\n1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1]\\nclass = risotto\", fillcolor=\"#ffffff\"] ;\n1 -> 11 ;\n12 [label=\"sweet <= 0.5\\nentropy = 3.322\\nsamples = 10\\nvalue = [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1\\n1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]\\nclass = risotto\", fillcolor=\"#ffffff\"] ;\n11 -> 12 ;\n13 [label=\"entropy = 3.17\\nsamples = 9\\nvalue = [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1\\n1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]\\nclass = risotto\", fillcolor=\"#ffffff\"] ;\n12 -> 13 ;\n14 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = fish and chips\", fillcolor=\"#39e572\"] ;\n12 -> 14 ;\n15 [label=\"sweet <= 0.5\\nentropy = 1.585\\nsamples = 3\\nvalue = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = steak\", fillcolor=\"#ffffff\"] ;\n11 -> 15 ;\n16 [label=\"entropy = 1.0\\nsamples = 2\\nvalue = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = steak\", fillcolor=\"#ffffff\"] ;\n15 -> 16 ;\n17 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = beef and broccoli stir fry\", fillcolor=\"#8c39e5\"] ;\n15 -> 17 ;\n18 [label=\"spicy <= 0.5\\nentropy = 3.0\\nsamples = 8\\nvalue = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0]\\nclass = pizza margherita\", fillcolor=\"#ffffff\"] ;\n0 -> 18 [labeldistance=2.5, labelangle=-45, headlabel=\"False\"] ;\n19 [label=\"entropy = 2.585\\nsamples = 6\\nvalue = [1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0]\\nclass = pizza margherita\", fillcolor=\"#ffffff\"] ;\n18 -> 19 ;\n20 [label=\"entropy = 1.0\\nsamples = 2\\nvalue = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = spaghetti bolognese\", fillcolor=\"#ffffff\"] ;\n18 -> 20 ;\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/iris_tree.dot b/iris_tree.dot
+--- a/iris_tree.dot	(revision 77265e4384a716db698fb14ee2a35832fe389325)
++++ b/iris_tree.dot	(date 1680283342308)
+@@ -1,45 +1,21 @@
+ digraph Tree {
+ node [shape=box, style="filled, rounded", color="black", fontname="helvetica"] ;
+ edge [fontname="helvetica"] ;
+-0 [label="sour <= 0.5\nentropy = 4.774\nsamples = 30\nvalue = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1\n2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1]\nclass = hamburger", fillcolor="#ffffff"] ;
+-1 [label="umami <= 0.5\nentropy = 4.369\nsamples = 22\nvalue = [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1\n2, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1]\nclass = hamburger", fillcolor="#f6fafe"] ;
++0 [label="cuisineOther <= 0.5\nentropy = 2.322\nsamples = 5\nvalue = [1, 1, 1, 1, 1]\nclass = steak", fillcolor="#ffffff"] ;
++1 [label="cuisineItalian <= 0.5\nentropy = 1.585\nsamples = 3\nvalue = [0, 1, 1, 0, 1]\nclass = salmon fillet", fillcolor="#ffffff"] ;
+ 0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+-2 [label="cheese <= 0.5\nentropy = 3.17\nsamples = 9\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0\n1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0]\nclass = lasagne", fillcolor="#ffffff"] ;
++2 [label="smoky <= 0.5\nentropy = 1.0\nsamples = 2\nvalue = [0, 0, 1, 0, 1]\nclass = fish and chips", fillcolor="#ffffff"] ;
+ 1 -> 2 ;
+-3 [label="salty <= 0.5\nentropy = 1.585\nsamples = 3\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]\nclass = beef stroganoff", fillcolor="#ffffff"] ;
++3 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 1]\nclass = spinach and feta pie", fillcolor="#e539c0"] ;
+ 2 -> 3 ;
+-4 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]\nclass = lamb chops", fillcolor="#e539ac"] ;
+-3 -> 4 ;
+-5 [label="bitter <= 0.5\nentropy = 1.0\nsamples = 2\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]\nclass = beef stroganoff", fillcolor="#ffffff"] ;
+-3 -> 5 ;
+-6 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = beef stroganoff", fillcolor="#39e5bd"] ;
+-5 -> 6 ;
+-7 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]\nclass = chicken cordon bleu", fillcolor="#e53986"] ;
+-5 -> 7 ;
+-8 [label="cuisineAmerican <= 0.5\nentropy = 2.585\nsamples = 6\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0\n1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]\nclass = lasagne", fillcolor="#ffffff"] ;
+-2 -> 8 ;
+-9 [label="entropy = 2.322\nsamples = 5\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0\n0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]\nclass = lasagne", fillcolor="#ffffff"] ;
+-8 -> 9 ;
+-10 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\n1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = hamburger", fillcolor="#399de5"] ;
+-8 -> 10 ;
+-11 [label="spicy <= 0.5\nentropy = 3.7\nsamples = 13\nvalue = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1\n1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1]\nclass = risotto", fillcolor="#ffffff"] ;
+-1 -> 11 ;
+-12 [label="sweet <= 0.5\nentropy = 3.322\nsamples = 10\nvalue = [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1\n1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]\nclass = risotto", fillcolor="#ffffff"] ;
+-11 -> 12 ;
+-13 [label="entropy = 3.17\nsamples = 9\nvalue = [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1\n1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]\nclass = risotto", fillcolor="#ffffff"] ;
+-12 -> 13 ;
+-14 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = fish and chips", fillcolor="#39e572"] ;
+-12 -> 14 ;
+-15 [label="sweet <= 0.5\nentropy = 1.585\nsamples = 3\nvalue = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = steak", fillcolor="#ffffff"] ;
+-11 -> 15 ;
+-16 [label="entropy = 1.0\nsamples = 2\nvalue = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = steak", fillcolor="#ffffff"] ;
+-15 -> 16 ;
+-17 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = beef and broccoli stir fry", fillcolor="#8c39e5"] ;
+-15 -> 17 ;
+-18 [label="spicy <= 0.5\nentropy = 3.0\nsamples = 8\nvalue = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0]\nclass = pizza margherita", fillcolor="#ffffff"] ;
+-0 -> 18 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+-19 [label="entropy = 2.585\nsamples = 6\nvalue = [1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0]\nclass = pizza margherita", fillcolor="#ffffff"] ;
+-18 -> 19 ;
+-20 [label="entropy = 1.0\nsamples = 2\nvalue = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = spaghetti bolognese", fillcolor="#ffffff"] ;
+-18 -> 20 ;
++4 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 1, 0, 0]\nclass = fish and chips", fillcolor="#39e5c5"] ;
++2 -> 4 ;
++5 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 1, 0, 0, 0]\nclass = salmon fillet", fillcolor="#7be539"] ;
++1 -> 5 ;
++6 [label="bitter <= 0.5\nentropy = 1.0\nsamples = 2\nvalue = [1, 0, 0, 1, 0]\nclass = steak", fillcolor="#ffffff"] ;
++0 -> 6 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
++7 [label="entropy = 0.0\nsamples = 1\nvalue = [1, 0, 0, 0, 0]\nclass = steak", fillcolor="#e58139"] ;
++6 -> 7 ;
++8 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 1, 0]\nclass = beef stroganoff", fillcolor="#3c39e5"] ;
++6 -> 8 ;
+ }
+\ No newline at end of file
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"55efa515-3303-471c-875c-24b4943afa57\" name=\"Changes\" comment=\"\">\n      <change beforePath=\"$PROJECT_DIR$/iris_tree.dot\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/iris_tree.dot\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/main.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/main.py\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"MarkdownSettingsMigration\">\n    <option name=\"stateVersion\" value=\"1\" />\n  </component>\n  <component name=\"ProjectId\" id=\"2NKzSWRs3RD1AhbP84YSLaFKolG\" />\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">{\n  &quot;keyToString&quot;: {\n    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\n    &quot;last_opened_file_path&quot;: &quot;/Users/pawelmanczak/food akinator/Food-Akinator&quot;,\n    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.build&quot;\n  }\n}</component>\n  <component name=\"RecentsManager\">\n    <key name=\"CopyFile.RECENT_KEYS\">\n      <recent name=\"$PROJECT_DIR$\" />\n    </key>\n  </component>\n  <component name=\"RunManager\">\n    <configuration name=\"main\" type=\"PythonConfigurationType\" factoryName=\"Python\" singleton=\"false\" nameIsGenerated=\"true\">\n      <module name=\"Food-Akinator\" />\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\n      <option name=\"PARENT_ENVS\" value=\"true\" />\n      <envs>\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\n      </envs>\n      <option name=\"SDK_HOME\" value=\"\" />\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$\" />\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/main.py\" />\n      <option name=\"PARAMETERS\" value=\"\" />\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\n      <option name=\"MODULE_MODE\" value=\"false\" />\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\n      <option name=\"INPUT_FILE\" value=\"\" />\n      <method v=\"2\" />\n    </configuration>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"55efa515-3303-471c-875c-24b4943afa57\" name=\"Changes\" comment=\"\" />\n      <created>1679427561464</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1679427561464</updated>\n    </task>\n    <servers />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 77265e4384a716db698fb14ee2a35832fe389325)
++++ b/.idea/workspace.xml	(date 1680281178787)
+@@ -5,7 +5,10 @@
+   </component>
+   <component name="ChangeListManager">
+     <list default="true" id="55efa515-3303-471c-875c-24b4943afa57" name="Changes" comment="">
++      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data.py" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/iris_tree.dot" beforeDir="false" afterPath="$PROJECT_DIR$/iris_tree.dot" afterDir="false" />
++      <change beforePath="$PROJECT_DIR$/iris_tree.png" beforeDir="false" afterPath="$PROJECT_DIR$/iris_tree.png" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
