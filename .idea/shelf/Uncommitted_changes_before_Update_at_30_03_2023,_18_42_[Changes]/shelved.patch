@@ -1,0 +1,17 @@
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from sklearn.tree import DecisionTreeClassifier, export_graphviz\nfrom sklearn.tree import export_text\nfrom database import database\n\n# enums\n# DecisionTreeClassifier() cannot work on strings, so we need to set to each of them identifier,\n# we should make it programmatically\n\n# creating a list from database structure\nvalues_list = []\nfor recipe in database:\n    values = list(recipe.values())\n    values_list.append(values)\n\nprint(values_list)\n\n# creating a decision tree\nx = values_list\ny = list(range(0, len(x)))\n\ntree_clf = DecisionTreeClassifier()\ntree_clf.fit(x, y)\n\n# visualization\nfeatures = list(database[0].keys())\nf = open(\"/Users/pawelmanczak/probabilistic methods/pythonProject/iris_tree.dot\", 'w')\nexport_graphviz(\n    tree_clf,\n    out_file=f,  # path where you want it to output\n    feature_names=features,\n    class_names=list(map(str, y)),\n    rounded=True,\n    filled=True\n)\n\nr = export_text(tree_clf)\nprint(r)\n\n# dot -Tpng iris_tree.dot -o iris_tree.png <-- command exporting to png\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision 92c72dc330a616b9d330571f8b6607f312927485)
++++ b/main.py	(date 1680174068141)
+@@ -36,4 +36,4 @@
+ r = export_text(tree_clf)
+ print(r)
+ 
+-# dot -Tpng iris_tree.dot -o iris_tree.png <-- command exporting to png
++# dot -Tpng iris_tree.dot -o iris_tree.png <-- command exporting to png
+\ No newline at end of file
