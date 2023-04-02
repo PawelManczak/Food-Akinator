@@ -4,7 +4,7 @@ from sklearn.tree import export_text
 from data import DataHandler, Dish
 
 dh = DataHandler()
-dh.serializeData(Dish)
+# dh.serializeData(Dish)
 # creating a decision tree
 x = dh.dishes
 y = dh.names
@@ -29,26 +29,37 @@ print(r)
 children_left = tree_clf.tree_.children_left
 children_right = tree_clf.tree_.children_right
 
+#print(tree_clf.tree_.feature[6])
+# pobieramy tablice z indeksami atrybutów i wartościami progów
 features = tree_clf.tree_.feature
 thresholds = tree_clf.tree_.threshold
 
 
 # wyświetlamy warunki różnicujące dla węzłów
 
-# funkcja rekurencyjna do wypisania węzłów
-node = 0  # zaczynamy od korzenia
+# # funkcja rekurencyjna do wypisania węzłów
+def print_node(node_id, depth):
+    # wypisujemy węzeł
 
-while tree_clf.tree_.children_left[node] != tree_clf.tree_.children_right[node]:
-    feature = tree_clf.tree_.feature[node]
-    threshold = tree_clf.tree_.threshold[node]
-    answer = input("Czy {} <= {}? ".format(Dish.get_dish_variable_names()[features[node]], threshold))
-    if answer == 't':
-        node = tree_clf.tree_.children_left[node]
+    if children_left[node_id] == -1 or children_right[node_id] == -1:
+
+        predicted_class = tree_clf.classes_[tree_clf.tree_.value[node_id][0].argmax()]
+        print("Klasa końcowa:", predicted_class)
+
     else:
-        node = tree_clf.tree_.children_right[node]
 
-predicted_class = tree_clf.classes_[tree_clf.tree_.value[node][0].argmax()]
+        choice = "L"
 
-print("Klasa końcowa:", predicted_class)
+        while(choice != "t" and choice != "f"):
+            print("{}{}. Czy wybrana potrawa jest {}".format(
+                "  " * depth, node_id, Dish.get_dish_variable_names()[features[node_id]], thresholds[node_id]))
+            # przechodzimy do lewego i prawego potomka, jeśli istnieją
 
-# dot -Tpng iris_tree.dot -o iris_tree.png <-- command exporting to png
+            choice = input()
+
+            if choice == "f":
+                print_node(children_left[node_id], depth + 1)
+            elif choice == "t":
+                print_node(children_right[node_id], depth + 1)
+
+print_node(0, 0)
