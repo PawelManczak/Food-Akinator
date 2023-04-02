@@ -10,33 +10,16 @@ class Dish:
     umami: bool = False
     bitter: bool = False
     cheese: bool = False
-    gluten_free: bool = False
     vegetarian: bool = False
-    vegan: bool = False
-    organic: bool = False
     cuisineAmerican: bool = False
-    cuisineChinese: bool = False
-    cuisineFrench: bool = False
-    cuisineGreek: bool = False
     cuisineIndian: bool = False
     cuisineItalian: bool = False
     cuisineJapanese: bool = False
-    cuisineKorean: bool = False
     cuisineMexican: bool = False
-    cuisineMiddle_Eastern: bool = False
-    cuisineRussian: bool = False
-    cuisineThai: bool = False
-    cuisineVietnamese: bool = False
-    cuisineOther: bool = False
-    fruity: bool = False
-    nutty: bool = False
-    herbal: bool = False
-    floral: bool = False
-    earthy: bool = False
-    cheesy: bool = False
-    creamy: bool = False
-    smoky: bool = False
-    savory: bool = False
+    fish: bool = False
+    tomato: bool = False
+    mostlyMeet: bool = False
+    pasta: bool = False
 
     def __post_init__(self):
         true_args = [arg for arg in locals() if arg]
@@ -70,37 +53,25 @@ class DataHandler:
 
 
     def load_dishes(self):
-        self.add_dish('steak',
-                      Dish(sweet=False, sour=False, bitter=False, salty=True, umami=True, spicy=False, fruity=False,
-                           nutty=False, herbal=False, floral=False, earthy=False, cheesy=False, creamy=False,
-                           smoky=False, savory=False))
-        self.add_dish('salmon fillet',
-                      Dish(sweet=False, sour=False, bitter=False, salty=True, umami=True, spicy=False, fruity=False,
-                           nutty=False, herbal=False, floral=False, earthy=False, cheesy=False, creamy=False,
-                           smoky=True, savory=False))
-        self.add_dish('fish and chips',
-                      Dish(sweet=False, sour=False, bitter=False, salty=True, umami=False, spicy=False, fruity=False,
-                           nutty=False, herbal=False, floral=False, earthy=False, cheesy=False, creamy=False,
-                           smoky=False, savory=False, cuisineChinese=False, cuisineFrench=False, cuisineGreek=False,
-                           cuisineIndian=False,
-                           cuisineItalian=True, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,
-                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,
-                           cuisineVietnamese=False, cuisineOther=False))
-        self.add_dish('beef stroganoff',
-                      Dish(sweet=False, sour=True, bitter=False, salty=True, umami=True, spicy=False, fruity=False,
-                           nutty=False, herbal=False, floral=False, earthy=False, cheesy=False, creamy=True,
-                           smoky=False, savory=False, cuisineIndian=False,
-                           cuisineItalian=False, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,
-                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,
-                           cuisineVietnamese=False, cuisineOther=True))
-        self.add_dish('spinach and feta pie',
-                      Dish(sweet=False, sour=False, bitter=True, salty=True, umami=False, spicy=False, fruity=False,
-                           nutty=True, herbal=False, floral=False, earthy=False, cheesy=True, creamy=False, smoky=False,
-                           savory=False, cuisineIndian=False,
-                           cuisineItalian=False, cuisineJapanese=False, cuisineKorean=False, cuisineMexican=False,
-                           cuisineMiddle_Eastern=False, cuisineRussian=False, cuisineThai=False,
-                           cuisineVietnamese=False, cuisineOther=True))
-
-
-
+        self.add_dish('pizza margherita', Dish(cheese=True, salty=True, cuisineItalian=True, vegetarian=True))
+        self.add_dish('carbonara', Dish(cheese=True, salty=True, cuisineItalian=True, pasta=True))
+        self.add_dish('lasagne', Dish(salty=True, cheese=True, tomato=True, pasta=True))
+        self.add_dish('risotto', Dish(salty=True, cheese=True, cuisineItalian=True))
+        self.add_dish('steak', Dish(salty=True, mostlyMeet=True))
+        self.add_dish('salmon fillet', Dish(salty=True, umami=True, fish=True))
+        self.add_dish('fish and chips', Dish(salty=True, fish=True))
+        self.add_dish('chicken curry', Dish(spicy=True, salty=True, umami=True, cuisineIndian=True))
+        self.add_dish('beef stroganoff', Dish(sour=True, salty=True, umami=True, mostlyMeet=True))
+        self.add_dish('spinach and feta pie', Dish(bitter=True, salty=True))
+        self.add_dish('grilled cheese sandwich', Dish(cheese=True, salty=True, umami=True, vegetarian=True))
+        self.add_dish('hamburger', Dish(salty=True, cuisineAmerican=True, tomato=True))
+        self.add_dish('fajitas', Dish(spicy=True, sour=True, salty=True, umami=True, cuisineMexican=True))
+        self.add_dish('taco salad', Dish(sour=True, salty=True, umami=True, tomato=True, cuisineMexican=True))
+        self.add_dish('chicken teriyaki', Dish(sweet=True, salty=True, umami=True, cuisineJapanese=True, mostlyMeet=True))
+        self.add_dish('vegetable lasagna', Dish(salty=True, cuisineItalian=True, vegetarian=True, tomato=True, pasta=True))
+        self.add_dish('shrimp scampi', Dish(sour=True, salty=True, cuisineItalian=True))
+        self.add_dish('lamb chops', Dish(salty=True, umami=True, mostlyMeet=True))
+        self.add_dish('spaghetti bolognese', Dish(sour=True, salty=True, umami=True, tomato=True))
+        self.add_dish('pork ribs', Dish(sweet=True, spicy=True, salty=True, umami=True, mostlyMeet=True))
+        self.add_dish('kebab', Dish(spicy=True, sour=True, salty=True, umami=True, cuisineIndian=True))
 
