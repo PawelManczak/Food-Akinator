@@ -1,5 +1,5 @@
 from dataclasses import dataclass, fields
-from dataSQL import serialize
+from dataSQL import serialize, deserialize
 
 @dataclass
 class Dish:
@@ -52,8 +52,13 @@ class DataHandler:
         serialize(self, Dish)
 
 
+    def deserializeData(self, Dish):
+        deserialize(self, Dish)
+
+
     def load_dishes(self):
         self.add_dish('pizza margherita', Dish(cheese=True, salty=True, cuisineItalian=True, vegetarian=True))
+        self.add_dish('pizza', Dish(cheese=True, salty=True, cuisineItalian=True))
         self.add_dish('carbonara', Dish(cheese=True, salty=True, cuisineItalian=True, pasta=True))
         self.add_dish('lasagne', Dish(salty=True, cheese=True, tomato=True, pasta=True))
         self.add_dish('risotto', Dish(salty=True, cheese=True, cuisineItalian=True))
