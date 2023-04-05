@@ -4,13 +4,14 @@ from sklearn.tree import export_text
 
 from data import DataHandler, Dish
 from treeToPng import treeToPng
+from entropy import getBestFeature
 
 dh = DataHandler()
 x = dh.dishes
 y = dh.names
 x_df = pd.DataFrame(x)
 y_df = pd.DataFrame(dh.names)
-
+getBestFeature(x_df)
 feature_names = Dish.get_dish_variable_names()
 feature_names_df = pd.DataFrame(feature_names)
 answered = False
