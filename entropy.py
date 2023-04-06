@@ -1,6 +1,8 @@
 import math
+
+
 def countp(df):
-    #count how many times one has been spotted in a column
+    # count how many times one has been spotted in a column
     p_vector = []
     for _ in range(len(df.columns)):
         p_vector.append(0)
@@ -10,8 +12,9 @@ def countp(df):
                 p_vector[column] += 1
     return p_vector
 
+
 def countEntropy(df):
-    #E=-(-p/all*log2(p/all)-(all-p)/all*log2((all-p)/all)))
+    # E=-(-p/all*log2(p/all)-(all-p)/all*log2((all-p)/all)))
     p_vector = countp(df)
     allFeatures = len(p_vector)
     entropy = []
@@ -23,8 +26,10 @@ def countEntropy(df):
         if p == 0 or p == max_value:
             entropy[i] = 0
         else:
-            entropy[i] = -(p/max_value*math.log(p/max_value, 2)+((max_value-p)/max_value)*math.log((max_value-p)/max_value, 2))
+            entropy[i] = -(p / max_value * math.log(p / max_value, 2) + ((max_value - p) / max_value) * math.log(
+                (max_value - p) / max_value, 2))
     return entropy
+
 
 def getBestFeature(df):
     entropy_vector = countEntropy(df)
@@ -35,5 +40,3 @@ def getBestFeature(df):
             maxValue = entropy_vector[i]
             index = i
     return index
-
-
