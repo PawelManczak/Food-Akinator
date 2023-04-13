@@ -21,6 +21,7 @@ def ask_question(id_of_feature, user_v, feature_names_df):
         print(" IDK ")
         return "n"
 
+
 dh = DataHandler()
 data = dh.getDishesAndNamesVector()
 feature_names = Dish.get_dish_variable_names()
@@ -42,19 +43,22 @@ while not guessed:
 
     # asking a question
     print("{} Czy wybrana potrawa jest {}".format(
-        "  " * depth, list(feature_names_df.values)[id_of_feature]))
+        "  " * depth, list(feature_names)[id_of_feature]))
 
     answered = False
     while not answered:
 
-        if ask_question(id_of_feature, user_v, feature_names_df) not in ["f", "t"]:
+        if ask_question(id_of_feature, user_v, feature_names) not in ["f", "t"]:
             # handle idk answer
-            id_of_feature += 1  # TODO another best entropy, not implemented yet
+            feature_names.pop(id_of_feature)
+            for item in data:
+                item[1].pop(id_of_feature)
+
+            break
         else:
             answered = True
-
-    data = getBest(user_v, data, 0.5)
-    print("dlugosc x_df", len(data))
+            data = getBest(user_v, data, 0.5)
+            print("dlugosc x_df", len(data))
 
     if len(data) == 1:
         print("Klasa końcowa:", data[0])
