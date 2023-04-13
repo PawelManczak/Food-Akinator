@@ -1,0 +1,196 @@
+Index: dataSQL.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from sqlalchemy import create_engine, Column, Integer, Boolean, String\nfrom sqlalchemy.orm import declarative_base, sessionmaker\n\n#to use this file you can call dh.serializeData(Dish) in main or serialize(self, Dish) in data.py\n#to see results open https://sqliteonline.com/\n#and in the left top corner choose file dishes.db, it is in the same folder as this file\ndef serialize(data_handler, Dish):\n\n    # Set up the database connection\n    engine = create_engine('sqlite:///dishes.db')\n    Session = sessionmaker(bind=engine)\n\n    # Define the model\n    Base = declarative_base()\n\n    class DishModel(Base):\n        __tablename__ = 'dishes'\n        id = Column(Integer, primary_key=True)\n        name = Column(String)  # Add this line to define the \"name\" column\n        sweet = Column(Boolean)\n        sour = Column(Boolean)\n        spicy = Column(Boolean)\n        salty = Column(Boolean)\n        umami = Column(Boolean)\n        bitter = Column(Boolean)\n        cheese = Column(Boolean)\n        gluten_free = Column(Boolean)\n        vegetarian = Column(Boolean)\n        vegan = Column(Boolean)\n        organic = Column(Boolean)\n        cuisineAmerican = Column(Boolean)\n        cuisineChinese = Column(Boolean)\n        cuisineFrench = Column(Boolean)\n        cuisineGreek = Column(Boolean)\n        cuisineIndian = Column(Boolean)\n        cuisineItalian = Column(Boolean)\n        cuisineJapanese = Column(Boolean)\n        cuisineKorean = Column(Boolean)\n        cuisineMexican = Column(Boolean)\n        cuisineMiddle_Eastern = Column(Boolean)\n        cuisineRussian = Column(Boolean)\n        cuisineThai = Column(Boolean)\n        cuisineVietnamese = Column(Boolean)\n        cuisineOther = Column(Boolean)\n        fruity = Column(Boolean)\n        nutty= Column(Boolean)\n        herbal= Column(Boolean)\n        floral= Column(Boolean)\n        earthy= Column(Boolean)\n        cheesy= Column(Boolean)\n        creamy= Column(Boolean)\n        smoky= Column(Boolean)\n        savory= Column(Boolean)\n\n    Base.metadata.create_all(engine)\n    session = Session()\n\n    # Iterate over the dishes and add them to the database\n    for name, dish in zip(data_handler.names, data_handler.dishes):\n        print(f\"Adding dish {name} to database\")  # Add this line to check if the loop is executing\n        dish_model = DishModel(name=name, **dict(zip(Dish.get_dish_variable_names(), dish)))\n        session.add(dish_model)\n\n    # Commit the changes to the database\n    session.commit()\n\n    # Close the session\n    session.close()
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/dataSQL.py b/dataSQL.py
+--- a/dataSQL.py	(revision 38d630481e2acd7f122a5804dc5a74784e0c0cd5)
++++ b/dataSQL.py	(date 1680428691799)
+@@ -1,11 +1,11 @@
+ from sqlalchemy import create_engine, Column, Integer, Boolean, String
+ from sqlalchemy.orm import declarative_base, sessionmaker
+ 
+-#to use this file you can call dh.serializeData(Dish) in main or serialize(self, Dish) in data.py
+-#to see results open https://sqliteonline.com/
+-#and in the left top corner choose file dishes.db, it is in the same folder as this file
++
++# to use this file you can call dh.serializeData(Dish) in main or serialize(self, Dish) in data.py
++# to see results open https://sqliteonline.com/
++# and in the left top corner choose file dishes.db, it is in the same folder as this file
+ def serialize(data_handler, Dish):
+-
+     # Set up the database connection
+     engine = create_engine('sqlite:///dishes.db')
+     Session = sessionmaker(bind=engine)
+@@ -43,14 +43,14 @@
+         cuisineVietnamese = Column(Boolean)
+         cuisineOther = Column(Boolean)
+         fruity = Column(Boolean)
+-        nutty= Column(Boolean)
+-        herbal= Column(Boolean)
+-        floral= Column(Boolean)
+-        earthy= Column(Boolean)
+-        cheesy= Column(Boolean)
+-        creamy= Column(Boolean)
+-        smoky= Column(Boolean)
+-        savory= Column(Boolean)
++        nutty = Column(Boolean)
++        herbal = Column(Boolean)
++        floral = Column(Boolean)
++        earthy = Column(Boolean)
++        cheesy = Column(Boolean)
++        creamy = Column(Boolean)
++        smoky = Column(Boolean)
++        savory = Column(Boolean)
+ 
+     Base.metadata.create_all(engine)
+     session = Session()
+@@ -65,4 +65,4 @@
+     session.commit()
+ 
+     # Close the session
+-    session.close()
+\ No newline at end of file
++    session.close()
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from sklearn.tree import DecisionTreeClassifier, export_graphviz\nfrom sklearn.tree import export_text\n\nfrom data import DataHandler, Dish\n\ndh = DataHandler()\n# dh.serializeData(Dish)\n# creating a decision tree\nx = dh.dishes\ny = dh.names\nprint(len(x))\ntree_clf = DecisionTreeClassifier(criterion='entropy', min_samples_leaf=1, max_depth=100000)\ntree_clf.fit(x, y)\n\n# visualization\nf = open(\"iris_tree.dot\", 'w')\nexport_graphviz(\n    tree_clf,\n    out_file=f,  # path where you want it to output\n    feature_names=Dish.get_dish_variable_names(),\n    class_names=y,\n    rounded=True,\n    filled=True\n)\n\nr = export_text(tree_clf)\nprint(r)\n\nchildren_left = tree_clf.tree_.children_left\nchildren_right = tree_clf.tree_.children_right\n\n#print(tree_clf.tree_.feature[6])\n# pobieramy tablice z indeksami atrybutów i wartościami progów\nfeatures = tree_clf.tree_.feature\nthresholds = tree_clf.tree_.threshold\n\n\n# wyświetlamy warunki różnicujące dla węzłów\n\n# # funkcja rekurencyjna do wypisania węzłów\ndef print_node(node_id, depth):\n    # wypisujemy węzeł\n\n    if children_left[node_id] == -1 or children_right[node_id] == -1:\n\n        predicted_class = tree_clf.classes_[tree_clf.tree_.value[node_id][0].argmax()]\n        print(\"Klasa końcowa:\", predicted_class)\n\n    else:\n\n        choice = \"L\"\n\n        while(choice != \"t\" and choice != \"f\"):\n            print(\"{}{}. Czy wybrana potrawa jest {}\".format(\n                \"  \" * depth, node_id, Dish.get_dish_variable_names()[features[node_id]], thresholds[node_id]))\n            # przechodzimy do lewego i prawego potomka, jeśli istnieją\n\n            choice = input()\n\n            if choice == \"f\":\n                print_node(children_left[node_id], depth + 1)\n            elif choice == \"t\":\n                print_node(children_right[node_id], depth + 1)\n\nprint_node(0, 0)
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision 38d630481e2acd7f122a5804dc5a74784e0c0cd5)
++++ b/main.py	(date 1680436074661)
+@@ -1,3 +1,5 @@
++import pandas as pd
++
+ from sklearn.tree import DecisionTreeClassifier, export_graphviz
+ from sklearn.tree import export_text
+ 
+@@ -9,15 +11,16 @@
+ x = dh.dishes
+ y = dh.names
+ print(len(x))
+-tree_clf = DecisionTreeClassifier(criterion='entropy', min_samples_leaf=1, max_depth=100000)
++tree_clf = DecisionTreeClassifier(criterion='entropy', min_samples_leaf=1)
+ tree_clf.fit(x, y)
++feature_names = Dish.get_dish_variable_names()
+ 
+ # visualization
+ f = open("iris_tree.dot", 'w')
+ export_graphviz(
+     tree_clf,
+     out_file=f,  # path where you want it to output
+-    feature_names=Dish.get_dish_variable_names(),
++    feature_names=feature_names,
+     class_names=y,
+     rounded=True,
+     filled=True
+@@ -29,7 +32,7 @@
+ children_left = tree_clf.tree_.children_left
+ children_right = tree_clf.tree_.children_right
+ 
+-#print(tree_clf.tree_.feature[6])
++# print(tree_clf.tree_.feature[6])
+ # pobieramy tablice z indeksami atrybutów i wartościami progów
+ features = tree_clf.tree_.feature
+ thresholds = tree_clf.tree_.threshold
+@@ -38,9 +41,9 @@
+ # wyświetlamy warunki różnicujące dla węzłów
+ 
+ # # funkcja rekurencyjna do wypisania węzłów
+-def print_node(node_id, depth):
++def print_node(node_id, depth, tree_clf):
++
+     # wypisujemy węzeł
+-
+     if children_left[node_id] == -1 or children_right[node_id] == -1:
+ 
+         predicted_class = tree_clf.classes_[tree_clf.tree_.value[node_id][0].argmax()]
+@@ -50,16 +53,32 @@
+ 
+         choice = "L"
+ 
+-        while(choice != "t" and choice != "f"):
++        while choice != "t" and choice != "f":
+             print("{}{}. Czy wybrana potrawa jest {}".format(
+-                "  " * depth, node_id, Dish.get_dish_variable_names()[features[node_id]], thresholds[node_id]))
++                "  " * depth, node_id, Dish.get_dish_variable_names()[features[node_id]]))
+             # przechodzimy do lewego i prawego potomka, jeśli istnieją
+ 
+             choice = input()
+ 
+             if choice == "f":
+                 print_node(children_left[node_id], depth + 1)
++                print(r)
+             elif choice == "t":
+                 print_node(children_right[node_id], depth + 1)
++            else:
++
++                # print(int(features[node_id]))
++                x_df = pd.DataFrame(x)
++                feature_names_df = pd.DataFrame(feature_names)
++                print(x_df)
++                x_df = x_df.drop(int(features[node_id]), axis=1)
++                print(x_df)
++                new_tree_clf = DecisionTreeClassifier(criterion='entropy', min_samples_leaf=1, max_depth=100000)
++                new_tree_clf.fit(x_df, y)
++
++
++                print_node(0, 0, new_tree_clf)
+ 
+-print_node(0, 0)
+\ No newline at end of file
++
++print_node(0, 0, tree_clf)
++# dot -Tpng iris_tree.dot -o iris_tree.png <-- command exporting to png
+Index: iris_tree.dot
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>digraph Tree {\nnode [shape=box, style=\"filled, rounded\", color=\"black\", fontname=\"helvetica\"] ;\nedge [fontname=\"helvetica\"] ;\n0 [label=\"cuisineOther <= 0.5\\nentropy = 2.322\\nsamples = 5\\nvalue = [1, 1, 1, 1, 1]\\nclass = steak\", fillcolor=\"#ffffff\"] ;\n1 [label=\"smoky <= 0.5\\nentropy = 1.585\\nsamples = 3\\nvalue = [0, 1, 1, 0, 1]\\nclass = salmon fillet\", fillcolor=\"#ffffff\"] ;\n0 -> 1 [labeldistance=2.5, labelangle=45, headlabel=\"True\"] ;\n2 [label=\"umami <= 0.5\\nentropy = 1.0\\nsamples = 2\\nvalue = [0, 1, 0, 0, 1]\\nclass = salmon fillet\", fillcolor=\"#ffffff\"] ;\n1 -> 2 ;\n3 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 1, 0, 0, 0]\\nclass = salmon fillet\", fillcolor=\"#7be539\"] ;\n2 -> 3 ;\n4 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 1]\\nclass = spinach and feta pie\", fillcolor=\"#e539c0\"] ;\n2 -> 4 ;\n5 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 1, 0, 0]\\nclass = fish and chips\", fillcolor=\"#39e5c5\"] ;\n1 -> 5 ;\n6 [label=\"creamy <= 0.5\\nentropy = 1.0\\nsamples = 2\\nvalue = [1, 0, 0, 1, 0]\\nclass = steak\", fillcolor=\"#ffffff\"] ;\n0 -> 6 [labeldistance=2.5, labelangle=-45, headlabel=\"False\"] ;\n7 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 1, 0]\\nclass = beef stroganoff\", fillcolor=\"#3c39e5\"] ;\n6 -> 7 ;\n8 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [1, 0, 0, 0, 0]\\nclass = steak\", fillcolor=\"#e58139\"] ;\n6 -> 8 ;\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/iris_tree.dot b/iris_tree.dot
+--- a/iris_tree.dot	(revision 38d630481e2acd7f122a5804dc5a74784e0c0cd5)
++++ b/iris_tree.dot	(date 1680436122866)
+@@ -1,21 +1,21 @@
+ digraph Tree {
+ node [shape=box, style="filled, rounded", color="black", fontname="helvetica"] ;
+ edge [fontname="helvetica"] ;
+-0 [label="cuisineOther <= 0.5\nentropy = 2.322\nsamples = 5\nvalue = [1, 1, 1, 1, 1]\nclass = steak", fillcolor="#ffffff"] ;
+-1 [label="smoky <= 0.5\nentropy = 1.585\nsamples = 3\nvalue = [0, 1, 1, 0, 1]\nclass = salmon fillet", fillcolor="#ffffff"] ;
++0 [label="umami <= 0.5\nentropy = 2.322\nsamples = 5\nvalue = [1, 1, 1, 1, 1]\nclass = steak", fillcolor="#ffffff"] ;
++1 [label="cheesy <= 0.5\nentropy = 1.0\nsamples = 2\nvalue = [0, 1, 0, 1, 0]\nclass = salmon fillet", fillcolor="#ffffff"] ;
+ 0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+-2 [label="umami <= 0.5\nentropy = 1.0\nsamples = 2\nvalue = [0, 1, 0, 0, 1]\nclass = salmon fillet", fillcolor="#ffffff"] ;
++2 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 1, 0, 0, 0]\nclass = salmon fillet", fillcolor="#7be539"] ;
+ 1 -> 2 ;
+-3 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 1, 0, 0, 0]\nclass = salmon fillet", fillcolor="#7be539"] ;
+-2 -> 3 ;
+-4 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 1]\nclass = spinach and feta pie", fillcolor="#e539c0"] ;
+-2 -> 4 ;
+-5 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 1, 0, 0]\nclass = fish and chips", fillcolor="#39e5c5"] ;
+-1 -> 5 ;
+-6 [label="creamy <= 0.5\nentropy = 1.0\nsamples = 2\nvalue = [1, 0, 0, 1, 0]\nclass = steak", fillcolor="#ffffff"] ;
+-0 -> 6 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+-7 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 1, 0]\nclass = beef stroganoff", fillcolor="#3c39e5"] ;
+-6 -> 7 ;
++3 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 1, 0]\nclass = beef stroganoff", fillcolor="#3c39e5"] ;
++1 -> 3 ;
++4 [label="sour <= 0.5\nentropy = 1.585\nsamples = 3\nvalue = [1, 0, 1, 0, 1]\nclass = steak", fillcolor="#ffffff"] ;
++0 -> 4 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
++5 [label="smoky <= 0.5\nentropy = 1.0\nsamples = 2\nvalue = [0, 0, 1, 0, 1]\nclass = fish and chips", fillcolor="#ffffff"] ;
++4 -> 5 ;
++6 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 1]\nclass = spinach and feta pie", fillcolor="#e539c0"] ;
++5 -> 6 ;
++7 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 1, 0, 0]\nclass = fish and chips", fillcolor="#39e5c5"] ;
++5 -> 7 ;
+ 8 [label="entropy = 0.0\nsamples = 1\nvalue = [1, 0, 0, 0, 0]\nclass = steak", fillcolor="#e58139"] ;
+-6 -> 8 ;
++4 -> 8 ;
+ }
+\ No newline at end of file

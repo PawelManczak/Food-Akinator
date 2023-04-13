@@ -1,0 +1,153 @@
+Index: dataSQL.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from sqlalchemy import create_engine, Column, Integer, Boolean, String\nfrom sqlalchemy.orm import declarative_base, sessionmaker\n\n#to use this file you can call dh.serializeData(Dish) in main or serialize(self, Dish) in data.py\n#to see results open https://sqliteonline.com/\n#and in the left top corner choose file dishes.db, it is in the same folder as this file\ndef serialize(data_handler, Dish):\n\n    # Set up the database connection\n    engine = create_engine('sqlite:///dishes.db')\n    Session = sessionmaker(bind=engine)\n\n    # Define the model\n    Base = declarative_base()\n\n    class DishModel(Base):\n        __tablename__ = 'dishes'\n        id = Column(Integer, primary_key=True)\n        name = Column(String)  # Add this line to define the \"name\" column\n        sweet = Column(Boolean)\n        sour = Column(Boolean)\n        spicy = Column(Boolean)\n        salty = Column(Boolean)\n        umami = Column(Boolean)\n        bitter = Column(Boolean)\n        cheese = Column(Boolean)\n        gluten_free = Column(Boolean)\n        vegetarian = Column(Boolean)\n        vegan = Column(Boolean)\n        organic = Column(Boolean)\n        cuisineAmerican = Column(Boolean)\n        cuisineChinese = Column(Boolean)\n        cuisineFrench = Column(Boolean)\n        cuisineGreek = Column(Boolean)\n        cuisineIndian = Column(Boolean)\n        cuisineItalian = Column(Boolean)\n        cuisineJapanese = Column(Boolean)\n        cuisineKorean = Column(Boolean)\n        cuisineMexican = Column(Boolean)\n        cuisineMiddle_Eastern = Column(Boolean)\n        cuisineRussian = Column(Boolean)\n        cuisineThai = Column(Boolean)\n        cuisineVietnamese = Column(Boolean)\n        cuisineOther = Column(Boolean)\n        fruity = Column(Boolean)\n        nutty= Column(Boolean)\n        herbal= Column(Boolean)\n        floral= Column(Boolean)\n        earthy= Column(Boolean)\n        cheesy= Column(Boolean)\n        creamy= Column(Boolean)\n        smoky= Column(Boolean)\n        savory= Column(Boolean)\n\n    Base.metadata.create_all(engine)\n    session = Session()\n\n    # Iterate over the dishes and add them to the database\n    for name, dish in zip(data_handler.names, data_handler.dishes):\n        print(f\"Adding dish {name} to database\")  # Add this line to check if the loop is executing\n        dish_model = DishModel(name=name, **dict(zip(Dish.get_dish_variable_names(), dish)))\n        session.add(dish_model)\n\n    # Commit the changes to the database\n    session.commit()\n\n    # Close the session\n    session.close()
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/dataSQL.py b/dataSQL.py
+--- a/dataSQL.py	(revision 07a2b08441d6f00caec28af071db66892b085118)
++++ b/dataSQL.py	(date 1680427227029)
+@@ -1,11 +1,11 @@
+ from sqlalchemy import create_engine, Column, Integer, Boolean, String
+ from sqlalchemy.orm import declarative_base, sessionmaker
+ 
+-#to use this file you can call dh.serializeData(Dish) in main or serialize(self, Dish) in data.py
+-#to see results open https://sqliteonline.com/
+-#and in the left top corner choose file dishes.db, it is in the same folder as this file
++
++# to use this file you can call dh.serializeData(Dish) in main or serialize(self, Dish) in data.py
++# to see results open https://sqliteonline.com/
++# and in the left top corner choose file dishes.db, it is in the same folder as this file
+ def serialize(data_handler, Dish):
+-
+     # Set up the database connection
+     engine = create_engine('sqlite:///dishes.db')
+     Session = sessionmaker(bind=engine)
+@@ -43,14 +43,14 @@
+         cuisineVietnamese = Column(Boolean)
+         cuisineOther = Column(Boolean)
+         fruity = Column(Boolean)
+-        nutty= Column(Boolean)
+-        herbal= Column(Boolean)
+-        floral= Column(Boolean)
+-        earthy= Column(Boolean)
+-        cheesy= Column(Boolean)
+-        creamy= Column(Boolean)
+-        smoky= Column(Boolean)
+-        savory= Column(Boolean)
++        nutty = Column(Boolean)
++        herbal = Column(Boolean)
++        floral = Column(Boolean)
++        earthy = Column(Boolean)
++        cheesy = Column(Boolean)
++        creamy = Column(Boolean)
++        smoky = Column(Boolean)
++        savory = Column(Boolean)
+ 
+     Base.metadata.create_all(engine)
+     session = Session()
+@@ -65,4 +65,4 @@
+     session.commit()
+ 
+     # Close the session
+-    session.close()
+\ No newline at end of file
++    session.close()
+Index: main.py
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>from sklearn.tree import DecisionTreeClassifier, export_graphviz\nfrom sklearn.tree import export_text\n\nfrom data import DataHandler, Dish\n\ndh = DataHandler()\ndh.serializeData(Dish)\n# creating a decision tree\nx = dh.dishes\ny = dh.names\nprint(len(x))\ntree_clf = DecisionTreeClassifier(criterion='entropy', min_samples_leaf=1, max_depth=100000)\ntree_clf.fit(x, y)\n\n# visualization\nf = open(\"iris_tree.dot\", 'w')\nexport_graphviz(\n    tree_clf,\n    out_file=f,  # path where you want it to output\n    feature_names=Dish.get_dish_variable_names(),\n    class_names=y,\n    rounded=True,\n    filled=True\n)\n\nr = export_text(tree_clf)\nprint(r)\n\nchildren_left = tree_clf.tree_.children_left\nchildren_right = tree_clf.tree_.children_right\n\nfeatures = tree_clf.tree_.feature\nthresholds = tree_clf.tree_.threshold\n\n\n# wyświetlamy warunki różnicujące dla węzłów\n\n# funkcja rekurencyjna do wypisania węzłów\nnode = 0  # zaczynamy od korzenia\n\nwhile tree_clf.tree_.children_left[node] != tree_clf.tree_.children_right[node]:\n    feature = tree_clf.tree_.feature[node]\n    threshold = tree_clf.tree_.threshold[node]\n    answer = input(\"Czy {} <= {}? \".format(Dish.get_dish_variable_names()[features[node]], threshold))\n    if answer == 't':\n        node = tree_clf.tree_.children_left[node]\n    else:\n        node = tree_clf.tree_.children_right[node]\n\npredicted_class = tree_clf.classes_[tree_clf.tree_.value[node][0].argmax()]\n\nprint(\"Klasa końcowa:\", predicted_class)\n\n# dot -Tpng iris_tree.dot -o iris_tree.png <-- command exporting to png\n
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/main.py b/main.py
+--- a/main.py	(revision 07a2b08441d6f00caec28af071db66892b085118)
++++ b/main.py	(date 1680427413378)
+@@ -4,7 +4,7 @@
+ from data import DataHandler, Dish
+ 
+ dh = DataHandler()
+-dh.serializeData(Dish)
++#dh.serializeData(Dish)
+ # creating a decision tree
+ x = dh.dishes
+ y = dh.names
+Index: .idea/workspace.xml
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+><?xml version=\"1.0\" encoding=\"UTF-8\"?>\n<project version=\"4\">\n  <component name=\"AutoImportSettings\">\n    <option name=\"autoReloadType\" value=\"SELECTIVE\" />\n  </component>\n  <component name=\"ChangeListManager\">\n    <list default=\"true\" id=\"55efa515-3303-471c-875c-24b4943afa57\" name=\"Changes\" comment=\"\">\n      <change beforePath=\"$PROJECT_DIR$/.idea/workspace.xml\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/.idea/workspace.xml\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/data.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/data.py\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/dataSQL.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/dataSQL.py\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/iris_tree.dot\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/iris_tree.dot\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/iris_tree.png\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/iris_tree.png\" afterDir=\"false\" />\n      <change beforePath=\"$PROJECT_DIR$/main.py\" beforeDir=\"false\" afterPath=\"$PROJECT_DIR$/main.py\" afterDir=\"false\" />\n    </list>\n    <option name=\"SHOW_DIALOG\" value=\"false\" />\n    <option name=\"HIGHLIGHT_CONFLICTS\" value=\"true\" />\n    <option name=\"HIGHLIGHT_NON_ACTIVE_CHANGELIST\" value=\"false\" />\n    <option name=\"LAST_RESOLUTION\" value=\"IGNORE\" />\n  </component>\n  <component name=\"Git.Settings\">\n    <option name=\"RECENT_GIT_ROOT_PATH\" value=\"$PROJECT_DIR$\" />\n  </component>\n  <component name=\"MarkdownSettingsMigration\">\n    <option name=\"stateVersion\" value=\"1\" />\n  </component>\n  <component name=\"ProjectId\" id=\"2NKzSWRs3RD1AhbP84YSLaFKolG\" />\n  <component name=\"ProjectViewState\">\n    <option name=\"hideEmptyMiddlePackages\" value=\"true\" />\n    <option name=\"showLibraryContents\" value=\"true\" />\n  </component>\n  <component name=\"PropertiesComponent\">{\n  &quot;keyToString&quot;: {\n    &quot;RunOnceActivity.OpenProjectViewOnStart&quot;: &quot;true&quot;,\n    &quot;RunOnceActivity.ShowReadmeOnStart&quot;: &quot;true&quot;,\n    &quot;last_opened_file_path&quot;: &quot;/Users/pawelmanczak/food akinator/Food-Akinator&quot;,\n    &quot;settings.editor.selected.configurable&quot;: &quot;configurable.group.build&quot;\n  }\n}</component>\n  <component name=\"RecentsManager\">\n    <key name=\"CopyFile.RECENT_KEYS\">\n      <recent name=\"$PROJECT_DIR$\" />\n    </key>\n  </component>\n  <component name=\"RunManager\">\n    <configuration name=\"main\" type=\"PythonConfigurationType\" factoryName=\"Python\" singleton=\"false\" nameIsGenerated=\"true\">\n      <module name=\"Food-Akinator\" />\n      <option name=\"INTERPRETER_OPTIONS\" value=\"\" />\n      <option name=\"PARENT_ENVS\" value=\"true\" />\n      <envs>\n        <env name=\"PYTHONUNBUFFERED\" value=\"1\" />\n      </envs>\n      <option name=\"SDK_HOME\" value=\"\" />\n      <option name=\"WORKING_DIRECTORY\" value=\"$PROJECT_DIR$\" />\n      <option name=\"IS_MODULE_SDK\" value=\"true\" />\n      <option name=\"ADD_CONTENT_ROOTS\" value=\"true\" />\n      <option name=\"ADD_SOURCE_ROOTS\" value=\"true\" />\n      <option name=\"SCRIPT_NAME\" value=\"$PROJECT_DIR$/main.py\" />\n      <option name=\"PARAMETERS\" value=\"\" />\n      <option name=\"SHOW_COMMAND_LINE\" value=\"false\" />\n      <option name=\"EMULATE_TERMINAL\" value=\"false\" />\n      <option name=\"MODULE_MODE\" value=\"false\" />\n      <option name=\"REDIRECT_INPUT\" value=\"false\" />\n      <option name=\"INPUT_FILE\" value=\"\" />\n      <method v=\"2\" />\n    </configuration>\n  </component>\n  <component name=\"SpellCheckerSettings\" RuntimeDictionaries=\"0\" Folders=\"0\" CustomDictionaries=\"0\" DefaultDictionary=\"application-level\" UseSingleDictionary=\"true\" transferred=\"true\" />\n  <component name=\"TaskManager\">\n    <task active=\"true\" id=\"Default\" summary=\"Default task\">\n      <changelist id=\"55efa515-3303-471c-875c-24b4943afa57\" name=\"Changes\" comment=\"\" />\n      <created>1679427561464</created>\n      <option name=\"number\" value=\"Default\" />\n      <option name=\"presentableId\" value=\"Default\" />\n      <updated>1679427561464</updated>\n    </task>\n    <servers />\n  </component>\n</project>
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/.idea/workspace.xml b/.idea/workspace.xml
+--- a/.idea/workspace.xml	(revision 07a2b08441d6f00caec28af071db66892b085118)
++++ b/.idea/workspace.xml	(date 1680428690347)
+@@ -6,10 +6,8 @@
+   <component name="ChangeListManager">
+     <list default="true" id="55efa515-3303-471c-875c-24b4943afa57" name="Changes" comment="">
+       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/data.py" beforeDir="false" afterPath="$PROJECT_DIR$/data.py" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/dataSQL.py" beforeDir="false" afterPath="$PROJECT_DIR$/dataSQL.py" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/iris_tree.dot" beforeDir="false" afterPath="$PROJECT_DIR$/iris_tree.dot" afterDir="false" />
+-      <change beforePath="$PROJECT_DIR$/iris_tree.png" beforeDir="false" afterPath="$PROJECT_DIR$/iris_tree.png" afterDir="false" />
+       <change beforePath="$PROJECT_DIR$/main.py" beforeDir="false" afterPath="$PROJECT_DIR$/main.py" afterDir="false" />
+     </list>
+     <option name="SHOW_DIALOG" value="false" />
+Index: iris_tree.dot
+IDEA additional info:
+Subsystem: com.intellij.openapi.diff.impl.patch.BaseRevisionTextPatchEP
+<+>digraph Tree {\nnode [shape=box, style=\"filled, rounded\", color=\"black\", fontname=\"helvetica\"] ;\nedge [fontname=\"helvetica\"] ;\n0 [label=\"sour <= 0.5\\nentropy = 4.774\\nsamples = 30\\nvalue = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1\\n2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1]\\nclass = hamburger\", fillcolor=\"#ffffff\"] ;\n1 [label=\"umami <= 0.5\\nentropy = 4.369\\nsamples = 22\\nvalue = [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1\\n2, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1]\\nclass = hamburger\", fillcolor=\"#f6fafe\"] ;\n0 -> 1 [labeldistance=2.5, labelangle=45, headlabel=\"True\"] ;\n2 [label=\"cheese <= 0.5\\nentropy = 3.17\\nsamples = 9\\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0\\n1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0]\\nclass = lasagne\", fillcolor=\"#ffffff\"] ;\n1 -> 2 ;\n3 [label=\"salty <= 0.5\\nentropy = 1.585\\nsamples = 3\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]\\nclass = beef stroganoff\", fillcolor=\"#ffffff\"] ;\n2 -> 3 ;\n4 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]\\nclass = lamb chops\", fillcolor=\"#e539ac\"] ;\n3 -> 4 ;\n5 [label=\"bitter <= 0.5\\nentropy = 1.0\\nsamples = 2\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]\\nclass = beef stroganoff\", fillcolor=\"#ffffff\"] ;\n3 -> 5 ;\n6 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = beef stroganoff\", fillcolor=\"#39e5bd\"] ;\n5 -> 6 ;\n7 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]\\nclass = chicken cordon bleu\", fillcolor=\"#e53986\"] ;\n5 -> 7 ;\n8 [label=\"cuisineAmerican <= 0.5\\nentropy = 2.585\\nsamples = 6\\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]\\nclass = lasagne\", fillcolor=\"#ffffff\"] ;\n2 -> 8 ;\n9 [label=\"entropy = 2.322\\nsamples = 5\\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]\\nclass = lasagne\", fillcolor=\"#ffffff\"] ;\n8 -> 9 ;\n10 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = hamburger\", fillcolor=\"#399de5\"] ;\n8 -> 10 ;\n11 [label=\"spicy <= 0.5\\nentropy = 3.7\\nsamples = 13\\nvalue = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1\\n1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1]\\nclass = risotto\", fillcolor=\"#ffffff\"] ;\n1 -> 11 ;\n12 [label=\"sweet <= 0.5\\nentropy = 3.322\\nsamples = 10\\nvalue = [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1\\n1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]\\nclass = risotto\", fillcolor=\"#ffffff\"] ;\n11 -> 12 ;\n13 [label=\"entropy = 3.17\\nsamples = 9\\nvalue = [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1\\n1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]\\nclass = risotto\", fillcolor=\"#ffffff\"] ;\n12 -> 13 ;\n14 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = fish and chips\", fillcolor=\"#39e572\"] ;\n12 -> 14 ;\n15 [label=\"sweet <= 0.5\\nentropy = 1.585\\nsamples = 3\\nvalue = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = steak\", fillcolor=\"#ffffff\"] ;\n11 -> 15 ;\n16 [label=\"entropy = 1.0\\nsamples = 2\\nvalue = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = steak\", fillcolor=\"#ffffff\"] ;\n15 -> 16 ;\n17 [label=\"entropy = 0.0\\nsamples = 1\\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = beef and broccoli stir fry\", fillcolor=\"#8c39e5\"] ;\n15 -> 17 ;\n18 [label=\"spicy <= 0.5\\nentropy = 3.0\\nsamples = 8\\nvalue = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0]\\nclass = pizza margherita\", fillcolor=\"#ffffff\"] ;\n0 -> 18 [labeldistance=2.5, labelangle=-45, headlabel=\"False\"] ;\n19 [label=\"entropy = 2.585\\nsamples = 6\\nvalue = [1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0]\\nclass = pizza margherita\", fillcolor=\"#ffffff\"] ;\n18 -> 19 ;\n20 [label=\"entropy = 1.0\\nsamples = 2\\nvalue = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0\\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\\nclass = spaghetti bolognese\", fillcolor=\"#ffffff\"] ;\n18 -> 20 ;\n}
+Subsystem: com.intellij.openapi.diff.impl.patch.CharsetEP
+<+>UTF-8
+===================================================================
+diff --git a/iris_tree.dot b/iris_tree.dot
+--- a/iris_tree.dot	(revision 07a2b08441d6f00caec28af071db66892b085118)
++++ b/iris_tree.dot	(date 1680427414215)
+@@ -1,45 +1,0 @@
+-digraph Tree {
+-node [shape=box, style="filled, rounded", color="black", fontname="helvetica"] ;
+-edge [fontname="helvetica"] ;
+-0 [label="sour <= 0.5\nentropy = 4.774\nsamples = 30\nvalue = [1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1, 1\n2, 1, 1, 1, 1, 1, 1, 1, 1, 2, 1, 1, 1, 1]\nclass = hamburger", fillcolor="#ffffff"] ;
+-1 [label="umami <= 0.5\nentropy = 4.369\nsamples = 22\nvalue = [0, 0, 0, 0, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1\n2, 1, 1, 1, 1, 1, 1, 1, 0, 1, 1, 1, 0, 1]\nclass = hamburger", fillcolor="#f6fafe"] ;
+-0 -> 1 [labeldistance=2.5, labelangle=45, headlabel="True"] ;
+-2 [label="cheese <= 0.5\nentropy = 3.17\nsamples = 9\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0\n1, 0, 1, 1, 1, 0, 1, 0, 0, 1, 1, 0, 0, 0]\nclass = lasagne", fillcolor="#ffffff"] ;
+-1 -> 2 ;
+-3 [label="salty <= 0.5\nentropy = 1.585\nsamples = 3\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0]\nclass = beef stroganoff", fillcolor="#ffffff"] ;
+-2 -> 3 ;
+-4 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0]\nclass = lamb chops", fillcolor="#e539ac"] ;
+-3 -> 4 ;
+-5 [label="bitter <= 0.5\nentropy = 1.0\nsamples = 2\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]\nclass = beef stroganoff", fillcolor="#ffffff"] ;
+-3 -> 5 ;
+-6 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = beef stroganoff", fillcolor="#39e5bd"] ;
+-5 -> 6 ;
+-7 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0]\nclass = chicken cordon bleu", fillcolor="#e53986"] ;
+-5 -> 7 ;
+-8 [label="cuisineAmerican <= 0.5\nentropy = 2.585\nsamples = 6\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0\n1, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]\nclass = lasagne", fillcolor="#ffffff"] ;
+-2 -> 8 ;
+-9 [label="entropy = 2.322\nsamples = 5\nvalue = [0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0\n0, 0, 1, 1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0]\nclass = lasagne", fillcolor="#ffffff"] ;
+-8 -> 9 ;
+-10 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\n1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = hamburger", fillcolor="#399de5"] ;
+-8 -> 10 ;
+-11 [label="spicy <= 0.5\nentropy = 3.7\nsamples = 13\nvalue = [0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 0, 0, 1, 1\n1, 1, 0, 0, 0, 1, 0, 1, 0, 0, 0, 1, 0, 1]\nclass = risotto", fillcolor="#ffffff"] ;
+-1 -> 11 ;
+-12 [label="sweet <= 0.5\nentropy = 3.322\nsamples = 10\nvalue = [0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1\n1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]\nclass = risotto", fillcolor="#ffffff"] ;
+-11 -> 12 ;
+-13 [label="entropy = 3.17\nsamples = 9\nvalue = [0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0, 1, 1\n1, 1, 0, 0, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1]\nclass = risotto", fillcolor="#ffffff"] ;
+-12 -> 13 ;
+-14 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = fish and chips", fillcolor="#39e572"] ;
+-12 -> 14 ;
+-15 [label="sweet <= 0.5\nentropy = 1.585\nsamples = 3\nvalue = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = steak", fillcolor="#ffffff"] ;
+-11 -> 15 ;
+-16 [label="entropy = 1.0\nsamples = 2\nvalue = [0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = steak", fillcolor="#ffffff"] ;
+-15 -> 16 ;
+-17 [label="entropy = 0.0\nsamples = 1\nvalue = [0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = beef and broccoli stir fry", fillcolor="#8c39e5"] ;
+-15 -> 17 ;
+-18 [label="spicy <= 0.5\nentropy = 3.0\nsamples = 8\nvalue = [1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0]\nclass = pizza margherita", fillcolor="#ffffff"] ;
+-0 -> 18 [labeldistance=2.5, labelangle=-45, headlabel="False"] ;
+-19 [label="entropy = 2.585\nsamples = 6\nvalue = [1, 1, 0, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 0, 0, 1, 0]\nclass = pizza margherita", fillcolor="#ffffff"] ;
+-18 -> 19 ;
+-20 [label="entropy = 1.0\nsamples = 2\nvalue = [0, 0, 1, 0, 0, 0, 0, 0, 0, 0, 1, 0, 0, 0\n0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0]\nclass = spaghetti bolognese", fillcolor="#ffffff"] ;
+-18 -> 20 ;
+-}
+\ No newline at end of file

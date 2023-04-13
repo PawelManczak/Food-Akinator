@@ -47,7 +47,8 @@ class DataHandler:
     def __init__(self):
         self.load_dishes()
 
-
+    def getDishesAndNamesVector(self):
+        return list(zip(self.names, self.dishes))
     def serializeData(self, Dish):
         serialize(self, Dish)
 
@@ -57,13 +58,13 @@ class DataHandler:
 
 
     def load_dishes(self):
-        self.add_dish('pizza margherita', Dish(cheese=True, salty=True, cuisineItalian=True, vegetarian=True))
+        self.add_dish('pizza margherita', Dish(sweet=True, sour=True, spicy=True))
         self.add_dish('pizza', Dish(cheese=True, salty=True, cuisineItalian=True))
         self.add_dish('carbonara', Dish(cheese=True, salty=True, cuisineItalian=True, pasta=True))
         self.add_dish('lasagne', Dish(salty=True, cheese=True, tomato=True, pasta=True))
         self.add_dish('risotto', Dish(salty=True, cheese=True, cuisineItalian=True))
         self.add_dish('steak', Dish(salty=True, mostlyMeet=True))
-        self.add_dish('salmon fillet', Dish(salty=True, umami=True, fish=True))
+        """self.add_dish('salmon fillet', Dish(salty=True, umami=True, fish=True))
         self.add_dish('fish and chips', Dish(salty=True, fish=True))
         self.add_dish('chicken curry', Dish(spicy=True, salty=True, umami=True, cuisineIndian=True))
         self.add_dish('beef stroganoff', Dish(sour=True, salty=True, umami=True, mostlyMeet=True))
@@ -78,5 +79,5 @@ class DataHandler:
         self.add_dish('lamb chops', Dish(salty=True, umami=True, mostlyMeet=True))
         self.add_dish('spaghetti bolognese', Dish(sour=True, salty=True, umami=True, tomato=True))
         self.add_dish('pork ribs', Dish(sweet=True, spicy=True, salty=True, umami=True, mostlyMeet=True))
-        self.add_dish('kebab', Dish(spicy=True, sour=True, salty=True, umami=True, cuisineIndian=True))
+        self.add_dish('kebab', Dish(spicy=True, sour=True, salty=True, umami=True, cuisineIndian=True))"""
 

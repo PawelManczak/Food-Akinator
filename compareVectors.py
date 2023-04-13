@@ -1,45 +1,49 @@
+from copy import copy
+
 import numpy as np
 import pandas as pd
 from pandas import DataFrame
-from sqlalchemy import null
-from data import DataHandler, Dish
 
 
 def compareVectors(user_v: DataFrame, v: DataFrame) -> float:
-    print(type(v))
-    v1 = pd.DataFrame(v)
-    v1 = v1.applymap(lambda x: -x if pd.notnull(x) else None)
+    v1 = pd.DataFrame(v).T
+    neg_replacement_map = {True: -1, False: 1, None: None}
+    replacement_map = {True: 1, False: -1, None: None}
 
-    result = v1.add(user_v, fill_value=0).where((v1.notnull()) & (user_v.notnull()))
-    sum_of_all_elements = result.dropna().sum().sum()
-    num_of_null_values = user_v.isnull().sum().sum()
-    to_return = abs(sum_of_all_elements / (len(user_v) - num_of_null_values))
+    v1.replace(neg_replacement_map, inplace=True)
+    user_v1 = copy(user_v)
+    user_v1.replace(replacement_map, inplace=True)
+
+    def sum_with_none(x, y):
+        if x is None or y is None:
+            return None
+        else:
+            return x + y
+
+    result = v1.combine(user_v1, func=sum_with_none)
+
+    sum_of_all_elements = np.nansum(result.values)
+    num_of_null_values = user_v1.isnull().sum().sum()
+    to_return = abs(sum_of_all_elements / (len(user_v1) - num_of_null_values))
 
     return to_return
 
 
-def getBest(user_v: DataFrame, vectors: DataFrame, factor: float):
-    best = [compareVectors(user_v, vector) for vector in vectors]
-    best.sort()
-    return best[:round(len(user_v) * factor)]
+def getBest(user_v: DataFrame, vectors: list, factor: float):
+    best = [compareVectors(user_v, vector[1]) for vector in vectors]
+    zipped = [pair + (value,) for pair, value in zip(vectors, best)]
 
+    countZeros = best.count(0)
+    # print("amount of zeros: ", countZeros)
+    sorted_array = sorted(zipped, key=lambda x: x[2])
 
-"""user = pd.DataFrame([True, False, None])
+    size = round(len(vectors) * factor)
 
-df2 = pd.DataFrame([True, False, True])
+    if size < countZeros:
+        size = countZeros
 
-result = compareVectors(df2, user)
-print(result)
-
-dh = DataHandler()
-
-x = dh.dishes
-y = dh.names
-x_df = pd.DataFrame(x)
-y_df = pd.DataFrame(dh.names)
-
-print(type(pd.DataFrame(x[0])))
-
-print("----- same -------")
-print(compareVectors(pd.DataFrame(x[0]), pd.DataFrame(x[0])))
-print(getBest(pd.DataFrame(x[0]), x, 0.5))"""
+    sorted_array = sorted_array[:size]
+    array_to_return = [item[:2] for item in sorted_array]
+    best = [compareVectors(user_v, vector[1]) for vector in array_to_return]
+    print("best: ", best)
+    return array_to_return
