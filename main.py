@@ -4,7 +4,7 @@ from sklearn.tree import export_text
 
 from data import DataHandler, Dish
 from compareVectors import getBest
-from entropy import getBestFeature
+from entropy import getBestFeature, getBestFeatureGini
 from treeToPng import treeToPng
 
 
@@ -37,7 +37,8 @@ while not guessed:
 
     # entropy
     values_from_pairs = pd.DataFrame([pair[1] for pair in data])
-    id_of_feature = getBestFeature(values_from_pairs)
+    #id_of_feature = getBestFeature(values_from_pairs)
+    id_of_feature = getBestFeatureGini(values_from_pairs)
 
     print(id_of_feature)
 

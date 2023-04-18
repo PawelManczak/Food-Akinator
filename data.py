@@ -35,6 +35,29 @@ class Dish:
         dish_fields = fields(Dish)
         return [field.name for field in dish_fields]
 
+    def set_none(self):
+
+        for arg in fields(self):
+            a = str(arg.name)
+            self.__dict__[a] = None
+
+    def update(self,dish):
+
+        for arg in fields(self):
+            a = str(arg.name)
+            if self.__dict__[a] == None:
+                self.__dict__[a] = dish.__dict__[a]
+
+    def get_value(self,index):
+        i = 0
+        wartosc = None
+        for arg in fields(self):
+            if i == index:
+                a = str(arg.name)
+                wartosc = self.__dict__[a]
+            i = i+1
+        return wartosc
+
 
 class DataHandler:
     names: list[str] = []
@@ -56,6 +79,14 @@ class DataHandler:
     def deserializeData(self, Dish):
         deserialize(self, Dish)
 
+    def update_dish(self,dish,new_answers):
+
+        for i in range(0,len(self.names)):
+            if self.names[i] == dish[0]:
+                for j in range(0,len(self.dishes[i])):
+                    if self.dishes[i][j] == None:
+                        self.dishes[i][j] = new_answers.get_value(j)
+
 
     def load_dishes(self):
         self.add_dish('pizza margherita', Dish(sweet=True, sour=True, spicy=True))
@@ -64,7 +95,7 @@ class DataHandler:
         self.add_dish('lasagne', Dish(salty=True, cheese=True, tomato=True, pasta=True))
         self.add_dish('risotto', Dish(salty=True, cheese=True, cuisineItalian=True))
         self.add_dish('steak', Dish(salty=True, mostlyMeet=True))
-        """self.add_dish('salmon fillet', Dish(salty=True, umami=True, fish=True))
+        self.add_dish('salmon fillet', Dish(salty=True, umami=True, fish=True))
         self.add_dish('fish and chips', Dish(salty=True, fish=True))
         self.add_dish('chicken curry', Dish(spicy=True, salty=True, umami=True, cuisineIndian=True))
         self.add_dish('beef stroganoff', Dish(sour=True, salty=True, umami=True, mostlyMeet=True))
@@ -79,5 +110,4 @@ class DataHandler:
         self.add_dish('lamb chops', Dish(salty=True, umami=True, mostlyMeet=True))
         self.add_dish('spaghetti bolognese', Dish(sour=True, salty=True, umami=True, tomato=True))
         self.add_dish('pork ribs', Dish(sweet=True, spicy=True, salty=True, umami=True, mostlyMeet=True))
-        self.add_dish('kebab', Dish(spicy=True, sour=True, salty=True, umami=True, cuisineIndian=True))"""
-
+        self.add_dish('kebab', Dish(spicy=True, sour=True, salty=True, umami=True, cuisineIndian=True))
